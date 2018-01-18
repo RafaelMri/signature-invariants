@@ -29,8 +29,8 @@ To run the worksheets:
 ~~~ sh
 $ lein gorilla
 ~~~
-Then open the output URL in your browser and press <CTRL-G> <CTRL-G>, and choose worksheets/worksheet-invariants.clj.
-You can then run the sheet with <CTRL> <SHIFT> <ENTER>.
+Then open the output URL in your browser and press `<CTRL-G> <CTRL-G>`, and choose worksheets/worksheet-invariants.clj.
+You can then run the sheet with `<CTRL> <SHIFT> <ENTER>`.
 
 Copyright © 2018 Joscha Diehl
 
