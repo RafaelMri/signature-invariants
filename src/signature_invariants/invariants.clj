@@ -1,6 +1,6 @@
 (ns
   signature-invariants.invariants
-  "Generate the invariants of Diehl/Reizenstein - Invariants of multidimensional signals based on their signature, 2018."
+  "Generate the invariants of Diehl/Reizenstein - Invariants of multidimensional time series based on their iterated-integral signature, 2018."
   (:require [signature-invariants.young-tableau :as yt]
             [signature-invariants.signature :as signature]
             [signature-invariants.permutations :as permutations]
@@ -33,9 +33,8 @@
 ; GL INVARIANTS
 ;;;;;;;;;;;;;;;
 
-;;
-;- first, brute force calculation, as a sanity check
-;;
+; First, a brute force calculation, as a sanity check.
+
 (defn- g-brute-force [i perm dim]
   (let [weight (/ (count perm) dim)]
     (reduce
@@ -70,9 +69,8 @@
     (gl-invariants-brute-force-for-permutation dim weight perm)))
 
 
-;;
-;- now, the efficient way using Young tableaux
-;;
+; Now, the efficient way using Young tableaux.
+
 (defn permute
   "i_{\\sigma(1) .. i_{\\sigma(n)}.
   Here, `sigma` is either a map of the form {0 0, 1 2, 2 1},
@@ -110,7 +108,7 @@
             [ (into {} (map vector (range (* w dim) (* (inc w) dim))
                             (map (fn [x] (+ (* dim w) x)) perm))),
                sign] )
-          (permutations/spermutations dim)))
+          (permutations/signed-permutations dim)))
       (range weight))))
 
 (defn- gl-invariant-for-identity [dim weight]
@@ -360,7 +358,7 @@
 
 (defn- det-helper [dim]
   (into {}
-    (for [ [perm sign] (permutations/spermutations dim)]
+    (for [ [perm sign] (permutations/signed-permutations dim)]
       [ perm sign ])))
 
 (defn- so-invariants-with-one-det [dim order]
@@ -419,7 +417,7 @@
              (rest remaining-indices)))))))
 
 ;;;;;;;;;;;;;;;
-; general stuff
+; GENERAL STUFF
 ;;;;;;;;;;;;;;;
 
 (defn- zeroes [n]

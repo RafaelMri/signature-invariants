@@ -59,7 +59,9 @@
                          (lc/lc-multiply -1 (product y x))))
     a b))
 
-(defn bracket->lie-bracket [br]
+(defn bracket->lie-bracket
+  "[1 2] => 12 - 21"
+  [br]
   (if (sequential? br)
     (let [left (bracket->lie-bracket (first br))
           right (bracket->lie-bracket (second br))]
@@ -67,10 +69,6 @@
     (lc/lc-lift (sa/->ConcatWord [br]))))
     ;(bracket->lie-bracket-helper br)))
 
-
-(defn spy [x]
-  (println "spy => " x)
-  x)
 
 (defn lyndon-basis
   "The Lyndon basis in the letters 0,..,`dim`-1 of length <= order,
@@ -93,4 +91,3 @@
       (map
         (fn [ [k v] ] (lc/lc-multiply v (basis k)))
         m))))
-

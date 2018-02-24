@@ -1,4 +1,5 @@
-(ns signature-invariants.young-tableau)
+(ns signature-invariants.young-tableau
+  "Methods for generating and manipulating Young tableaux.")
 
 (defn first-standard-tableau [shape]
   "the first standard tableau in the order used here;

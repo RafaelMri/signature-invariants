@@ -6,11 +6,11 @@
             ))
 
  
-(defn numbers-only [x]
+(defn- numbers-only [x]
   " Just shows the numbers only for the pairs (i.e. drops the direction --used for display purposes when printing the result"
   (mapv first x))
  
-(defn next-permutation
+(defn- next-permutation
   " Generates next permutation from the current (p) using the Johnson-Trotter technique
     The code below translates the Python version which has the following steps:
      p of form [...[n dir]...] such as [[0 1] [1 1] [2 -1]], where n is a number and dir = direction (=1=right, -1=left, 0=don't move)
@@ -46,18 +46,21 @@
       ; apply steps 2, 3, 4(using functions that where created for these steps)
       (mapv fn-update-others (map-indexed vector (fn-update-max (fn-swap p)))))))
  
-(defn spermutations
-  " Lazy sequence of permutations of n digits"
+(defn- spermutations
   ; Each element is two element vector (number direction)
   ; Startup case - generates sequence 0...(n-1) with move direction (1 = move right, -1 = move left, 0 = don't move)
-  ([n] (spermutations 1
-                      (into [] (for [i (range n)] (if (zero? i)
-                                                    [i 0]               ; 0th element is not mobile yet
-                                                    [i -1])))))         ; all others move left
   ([sign p]
    (when-let [s (seq p)]
              (cons [(numbers-only p) sign]
                    (spermutations (- sign) (next-permutation p))))))   ; recursively tag onto sequence
+
+
+(defn signed-permutations
+  "Lazy sequence of [permutation sign(permutation) of n digits."
+  ([n] (spermutations 1
+                      (into [] (for [i (range n)] (if (zero? i)
+                                                    [i 0]               ; 0th element is not mobile yet
+                                                    [i -1]))))))         ; all others move left
 
 (defn- det-pick [M perm]
   (reduce
@@ -65,11 +68,13 @@
     (for [i (range (count M))]
       ((M i) (perm i)))))
 
-(defn det [M]
+(defn det
+  "Brute force implementation of det(M)."
+  [M]
   (let [d (count M)]
     (loop
       [result 0
-       perms (spermutations d)]
+       perms (signed-permutations d)]
       (if (empty? perms)
         result
         (recur
@@ -83,12 +88,12 @@
       ((M i) (perm i)))))
 
 (defn det-lc
-  "M is a matrix of entries in lc, that posseses a product."
+  "det(M) for a matrix of entries that are linear-combinations of objects that posseses a product."
   ([M] (det-lc M (count M)))
   ([M d]
     (loop
       [result {}
-       perms (spermutations d)]
+       perms (signed-permutations d)]
       (if (empty? perms)
         result
         (recur

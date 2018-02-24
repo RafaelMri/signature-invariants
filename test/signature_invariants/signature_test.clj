@@ -5,7 +5,7 @@
             [signature-invariants.lyndon-words :as lw]
             [signature-invariants.signature :refer :all]))
 
-(deftest dual-exponential-test []
+(deftest dual-logarithm-test []
   (testing "c"
     (is (= -1 (exp -1 1)))
     (is (= 1 (exp -1 2)))
@@ -25,9 +25,40 @@
        (#'signature-invariants.signature/de-shuffle 2 (sa/->ShuffleWord [1 2])))))
 
   (is (=
-       (dual-exponential (sa/->ShuffleWord [1 2]) 2)
-       (dual-exponential (sa/->ShuffleWord [1 2]) 3)
-       (dual-exponential (sa/->ShuffleWord [1 2]) 4)))
+       (dual-logarithm (sa/->ShuffleWord [1 2]) 2)
+       (dual-logarithm (sa/->ShuffleWord [1 2]) 3)
+       (dual-logarithm (sa/->ShuffleWord [1 2]) 4)))
+  )
+
+
+
+(deftest dual-logarithm-test
+  ;(dual-logarithm' (sa/->ShuffleWord [:a :b :c :d]) 4)
+
+  ; WTF is going on ??????????????????
+  (is (=
+    [ [[:a :b :c :d]] [[:a] [:b :c :d]] [[:a :b] [:c :d]] [[:a :b :c] [:d]]
+     [[:a] [:b] [:c :d]] [[:a] [:b :c] [:d]] [[:a :b] [:c] [:d]] [[:a] [:b]
+                                                                  [:c] [:d]] ]
+    (#'signature-invariants.signature/all-splits [:a :b :c :d])))
+
+  ;(println (all-splits [:a :b :c :d]))
+  ;(println (de-concat 3 (sa/->ShuffleWord [:a :b :c :d])))
+
+  (doseq [w (map (fn [n] (vec (take n [:a :b :c :d :e]))) (range 1 6))]
+    (is (=
+         (dual-logarithm (sa/->ShuffleWord w))
+         (dual-logarithm' (sa/->ShuffleWord w)))))
+
+    ;(println)
+    ;(println
+    ;  (lc/lc-to-str (dual-logarithm' (sa/->ShuffleWord w))))
+    ;(println
+    ;  (lc/lc-to-str (dual-logarithm (sa/->ShuffleWord w)))))
+  ;(println
+  ;  (lc/lc-to-str (dual-logarithm' (sa/->ShuffleWord [:a :b]))))
+  ;(println
+  ;  (lc/lc-to-str (dual-logarithm (sa/->ShuffleWord [:a :b]))))
   )
 
 (defn- cw [& w]
@@ -69,7 +100,7 @@
 ;               lie)))
 ;      (is (= (inc i)
 ;             (inner-product-sw-cw
-;               (lc/lc-apply-linear-function dual-exponential (dual-basis i))
+;               (lc/lc-apply-linear-function dual-logarithm (dual-basis i))
 ;               group)))
 ;      )
 ;    )
