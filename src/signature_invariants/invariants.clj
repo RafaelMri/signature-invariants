@@ -124,6 +124,14 @@
             { (sa/->ShuffleWord (index-for-taus dim weight (first taus-with-signs-s))) 1 })) ; XXX sigma vs sigma^-1
         (rest taus-with-signs-s)))))
 
+(defn to-mathematica
+  "Output a lc of words to an array that can be used in Mathematica."
+  [lc]
+  (println "{")
+  (doseq [ [k v] lc ]
+    (println "{ {" (apply str (interpose "," (map inc (:content k)))) "}, " v"},"))
+  (println "}"))
+
 (defn gl-invariants
   "Returns a basis for GL(R^dim) invariants of weight `weight`"
   [dim weight]
