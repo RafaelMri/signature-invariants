@@ -81,9 +81,9 @@
           (+ result (* (second (first perms))(det-pick M (first (first perms)))))
           (rest perms))))))
 
-(defn- det-lc-pick [M perm]
+(defn- det-lc-pick [M perm] ; XXX name
   (reduce
-    lc/lc-multiply
+    lc/*
     (for [i (range (count perm))]
       ((M i) (perm i)))))
 
@@ -97,7 +97,7 @@
       (if (empty? perms)
         result
         (recur
-          (lc/lc-add result (lc/lc-multiply
+          (lc/+ result (lc/*
                               (second (first perms))
                               (det-lc-pick M (first (first perms)))))
           (rest perms))))))

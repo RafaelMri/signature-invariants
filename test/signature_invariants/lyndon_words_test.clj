@@ -2,6 +2,8 @@
   (:require 
     [clojure.test :refer :all]
     [hopf-algebra.shuffle-algebra :as sa]
+    [hopf-algebra.linear-combination :as lc]
+    [hopf-algebra.linear-combination-plus :as lcp]
     [signature-invariants.lyndon-words :refer :all]))
 
 
@@ -102,3 +104,25 @@
   (is (= (into #{} first-5-levels)
          (into #{} (lyndon-basis 2 5))))
   )
+
+(deftest chen-fox-lyndon-breakpoints-test
+  (is (=
+       [ [1, 3, 3, 2] [1, 1, 3] [1] ] 
+       (chen-fox-lyndon-factorization [1,3,3,2,1,1,3,1])))
+
+  (let [words (sort (lyndon-words 2 7)),
+        lie
+          (reduce
+            lcp/+
+            (map-indexed
+              (fn [i w]
+                (-> w
+                    (bracketing)
+                    (bracket->lie-bracket)
+                    (lcp/lc->lcp (lcp/->FreeCommutative { (str "a" i) 1}))))
+                words))]
+    (doseq [i (range (count words))]
+      (is (=
+           { (lcp/->FreeCommutative { (str "a" i) 1}) 1 }
+           (lcp/lc-lc-plus-inner-product (sa/sw->cw (word->dual-basis (nth words i))) lie)))
+      )))

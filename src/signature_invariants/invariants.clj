@@ -7,6 +7,7 @@
             [hopf-algebra.shuffle-algebra :as sa]
             [hopf-algebra.linear-combination :as lc]
             [clojure.math.combinatorics]
+            [clojure.math.numeric-tower :refer [expt]]
             [clatrix.core :as clatrix]
             ))
 
@@ -33,7 +34,7 @@
 ; GL INVARIANTS
 ;;;;;;;;;;;;;;;
 
-; First, a brute force calculation, as a sanity check.
+; A brute force calculation, as a sanity check.
 
 (defn- g-brute-force [i perm dim]
   (let [weight (/ (count perm) dim)]
@@ -55,9 +56,9 @@
     (if (empty? indices)
       result
       (recur
-        (lc/lc-add
+        (lc/+
           result
-          (lc/lc-multiply
+          (lc/*
             (g-brute-force (first indices) perm dim) ; XXX most of these are zero ..
             { (sa/->ShuffleWord (first indices) ) 1 }))
         (rest indices)))))
@@ -117,20 +118,12 @@
     (if (empty? taus-with-signs-s)
       result
       (recur
-        (lc/lc-add
+        (lc/+
           result
-          (lc/lc-multiply
+          (lc/*
             (overall-sign (first taus-with-signs-s))
             { (sa/->ShuffleWord (index-for-taus dim weight (first taus-with-signs-s))) 1 })) ; XXX sigma vs sigma^-1
         (rest taus-with-signs-s)))))
-
-(defn to-mathematica
-  "Output a lc of words to an array that can be used in Mathematica."
-  [lc]
-  (println "{")
-  (doseq [ [k v] lc ]
-    (println "{ {" (apply str (interpose "," (map inc (:content k)))) "}, " v"},"))
-  (println "}"))
 
 (defn gl-invariants
   "Returns a basis for GL(R^dim) invariants of weight `weight`"
@@ -140,7 +133,7 @@
                     (yt/standard-tableaux (repeat dim weight)))]
     (for [sigma sigmas]
       (do
-      (lc/lc-apply-linear-function
+      (lc/apply-linear-function
         (fn [i] { (permute (yt/invert sigma) i) 1}) ; XXX sigma vs sigma^-1
         for-identity)))))
 
@@ -170,21 +163,18 @@
     (index-generator order 2))
   )
 
-(defn- exp [x n]
-  (reduce * (repeat n x)))
-
 (defn- real [i]
   (let [order (count i)]
     (reduce
-      lc/lc-add
+      lc/+
     (for [j (even-number-of-1s order)]
-      (lc/lc-multiply
+      (lc/*
         (*
-          (exp -1 (/ (count
+          (expt -1 (/ (count
                     (filter
                       (fn [ [a b] ] (= 1 a))
                       (map vector j i))) 2))
-          (exp -1 (count
+          (expt -1 (count
                     (filter
                       (fn [ [a b] ] (and (= 1 a) (= 1 b)))
                       (map vector j i)))))
@@ -193,15 +183,15 @@
 (defn- im [i]
   (let [order (count i)]
     (reduce
-      lc/lc-add
+      lc/+
     (for [j (odd-number-of-1s order)]
-      (lc/lc-multiply
+      (lc/*
         (*
-          (exp -1 (/ (dec (count
+          (expt -1 (/ (dec (count
                     (filter
                       (fn [ [a b] ] (= 1 a))
                       (map vector j i)))) 2))
-          (exp -1 (count
+          (expt -1 (count
                     (filter
                       (fn [ [a b] ] (and (= 1 a) (= 1 b)))
                       (map vector j i)))))
@@ -338,7 +328,7 @@
           (apply assoc result (interleave p m)))
         (rest positions-monomials)))))
 
-(defn- lc-multiply-specific-positions
+(defn- lc-multiply-specific-positions ; XXX name
   [order positions lcs]
   (loop [result {}
          remaining (apply clojure.math.combinatorics/cartesian-product lcs)]
@@ -387,10 +377,10 @@
             [det tmpp]))))))
 
 (defn so-invariants
-  "Returns a generating set for SO(R^dim) invariants of order `order`"
+  "Returns a spanning set for SO(R^dim) invariants of order `order`"
   [dim order]
   (map
-    (fn [lc] (lc/lc-apply-linear-function (fn [x] {(sa/->ShuffleWord x) 1}) lc)) ; wrap in ShuffleWord
+    (fn [lc] (lc/apply-linear-function (fn [x] {(sa/->ShuffleWord x) 1}) lc)) ; wrap in ShuffleWord
     (concat
       (so-invariants-without-det dim order)
       (so-invariants-with-one-det dim order))))
@@ -418,7 +408,7 @@
          result
          (recur
            (if (= p (nabla (first remaining-indices)))
-             (lc/lc-add
+             (lc/+
                {(sa/->ShuffleWord (first remaining-indices)) 1}
                result)
              result)
@@ -462,3 +452,12 @@
         (if add-it? (conj so-far-matrix next-vector) so-far-matrix)
         (if add-it? (conj so-far-raw (first remaining)) so-far-raw)
         (rest remaining))))))
+
+(defn to-mathematica
+  "Output an lc of words to an array that can be used in Mathematica."
+  [lc]
+  (println "{")
+  (doseq [ [k v] lc ]
+    (println "{ {" (apply str (interpose "," (map inc (:content k)))) "}, " v"},"))
+  (println "}"))
+
